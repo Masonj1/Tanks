@@ -10,6 +10,5 @@ Contributions:
     - Created start screen and game over screen
   Franky
     * Created a program for users to create their own maps for the game
-    - Found calculations for drawing turrets of tanks at appropriate angle
     - Created images for tanks and missiles
     - Created method to draw tanks and their turrets
