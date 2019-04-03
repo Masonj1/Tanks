@@ -23,12 +23,12 @@ public class Missile {
     }
 
     public void update(HashMap<Integer, Point> walls) {
-        if(xVelocity > 0 && walls.containsValue(new Point((int) xPos+size, (int) yPos+size/2)) ||
-                xVelocity < 0 && walls.containsValue(new Point((int) xPos, (int) yPos+size/2))) {
+        if(xVelocity > 0 && walls.containsValue(new Point((int) xPos+size*2, (int) yPos+size)) ||
+                xVelocity < 0 && walls.containsValue(new Point((int) xPos, (int) yPos+size))) {
             xVelocity *= -1;
         }
-        if(yVelocity > 0 && walls.containsValue(new Point((int) xPos+size/2, (int) yPos+size)) ||
-                yVelocity < 0 && walls.containsValue(new Point((int) xPos+size/2, (int) yPos))) {
+        if(yVelocity > 0 && walls.containsValue(new Point((int) xPos+size, (int) yPos+size*2)) ||
+                yVelocity < 0 && walls.containsValue(new Point((int) xPos+size, (int) yPos))) {
             yVelocity *= -1;
         }
         xPos += xVelocity;

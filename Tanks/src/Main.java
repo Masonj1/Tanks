@@ -11,7 +11,6 @@ import java.util.HashMap;
 public class Main extends JFrame {
     
     private int tankSize = 30;
-    private boolean initial = true;
     private Color wallColor= new Color(100, 235, 96);
     private int mapWidth;
     private int mapHeight;
@@ -21,8 +20,7 @@ public class Main extends JFrame {
     private boolean gameOver = false;
     private String winner;
     private boolean start = true;
-    private int twoPlayerX = 75;
-    private int onePlayerX;
+    private int buttonX = 75;
     private int buttonY;
     private int buttonWidth = 200;
     private int buttonHeight = 100;
@@ -31,12 +29,9 @@ public class Main extends JFrame {
         @Override
         public void mouseClicked(MouseEvent e) {
             super.mouseClicked(e);
-            if(e.getX() <= twoPlayerX + buttonWidth && e.getX() >= twoPlayerX) {
-                System.out.println("x aligned");
-                if(e.getY() <= buttonY + buttonHeight && e.getY() >= buttonY) {
-                    System.out.println("y aligned");
-                    start = false;
-                }
+            if(e.getX() <= buttonX + buttonWidth && e.getX() >= buttonX &&
+                    e.getY() <= buttonY + buttonHeight && e.getY() >= buttonY) {
+                start = false;
             }
         }
     };
@@ -86,7 +81,7 @@ public class Main extends JFrame {
         private GamePanel() {
 
             buttonY = map.getHeight()-150;
-            onePlayerX = map.getWidth()-275;
+            buttonX = (map.getWidth()-buttonWidth)/2;
             setFont(gameFont);
             setFocusable(true);
             requestFocusInWindow();
@@ -206,21 +201,17 @@ public class Main extends JFrame {
                 g2d.drawImage(startScreen, 0, 0, null);
                 g2d.setColor(Color.blue);
                 g2d.setFont(gameFont);
-                g2d.drawString("Tanks", getWidth()/2-150, 75);
+                g2d.drawString("Tanks", getWidth()/2-120, 75);
                 g2d.setFont(new Font("TimesNewRoman", Font.PLAIN, 25));
-                g2d.drawString("(Inspired by the tank level from Tron)", getWidth()/2-225, 100);
-                g2d.fillRect(twoPlayerX, buttonY, buttonWidth, buttonHeight);
-                g2d.setColor(Color.red);
-                g2d.fillRect(onePlayerX, buttonY, buttonWidth, buttonHeight);
+                g2d.drawString("(Inspired by the tank level from Tron)", getWidth()/2-200, 100);
+                g2d.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
                 g2d.setColor(Color.black);
-                g2d.drawString("2 Player", 125, map.getHeight()-90);
-                g2d.drawString("1 Player", getWidth()-225, map.getHeight()-90);
+                g2d.setFont(gameFont.deriveFont(Font.BOLD, 25f));
+                g2d.drawString("Start", buttonX+60, buttonY+60);
 
             }
             else {
-                if(initial) {
-                    removeMouseListener(getButton);
-                }
+                removeMouseListener(getButton);
                 g2d.drawRect(0,0,getWidth(), getHeight());
                 int direction = 0;
                 int turn = 0;
@@ -269,9 +260,9 @@ public class Main extends JFrame {
 
                 if (gameOver) {
                     g2d.setColor(winnerColor);
-                    g2d.drawString(winner + " wins!", 0, getHeight() / 2);
+                    g2d.drawString(winner + " wins!", 100, getHeight() / 2);
                 } else {
-                    g2d.drawImage(map, 0, 0, Color.green, null);
+                    g2d.drawImage(map, 0, 0, null);
                     ArrayList<Missile> deadMissiles = new ArrayList<>();
                     for (Missile missile : missiles) {
                         if (missile.alive) {
