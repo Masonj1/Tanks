@@ -12,3 +12,4 @@ Contributions:
     * Created a program for users to create their own maps for the game
     - Created images for tanks and missiles
     - Created method to draw tanks and their turrets
+    - Incorporated sounds into game events
