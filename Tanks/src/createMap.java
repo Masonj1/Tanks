@@ -1,6 +1,7 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -22,18 +23,26 @@ public class createMap extends JFrame {
     private float squareWidth;
     private float squareHeight;
     // Creates an arrayList to store all white cells in
-    public ArrayList<Point> whites = new ArrayList<>();
+    private ArrayList<Point> whites = new ArrayList<>();
     // Creates an arrayList to track all cells covered in the current move
     private ArrayList<Point> currentMove = new ArrayList<>();
 
     private class ButtonPanel extends JPanel {
         private ButtonPanel() {
             setPreferredSize(new Dimension(750, 100));
-            JButton saveButton = new JButton("save");
+            JButton saveButton = new JButton("Save");
+            JButton playButton = new JButton("Play");
+            playButton.addActionListener((ActionListener) -> {
+                savePic();
+                dispose();
+                Main.main(null);
+            });
             saveButton.addActionListener((ActionListener) -> {
                 savePic();
+                System.exit(0);
             });
             add(saveButton);
+            add(playButton);
 
 
         }
@@ -165,20 +174,20 @@ public class createMap extends JFrame {
     }
 
 
-    public static void main(String args[]) {
+    static void makeNewMap() {
         EventQueue.invokeLater(() -> {
             // Tries to use command line arguments to set the dimensions of the grid and uses the default dimensions if
             // that fails
-            try {
-                new createMap().setVisible(true);
-            }
-            catch(NumberFormatException | ArrayIndexOutOfBoundsException ex) {
-                new createMap().setVisible(true);
-            }
+            new createMap().setVisible(true);
         });
 
     }
-    public void savePic(){
+
+    private void playGame() {
+        savePic();
+    }
+
+    private void savePic(){
         BufferedImage map = new BufferedImage(750, 600, BufferedImage.TYPE_INT_RGB);
         for (int col = 0; col < 750; col ++){
             for (int row = 0; row < 600; row++){
@@ -209,6 +218,5 @@ public class createMap extends JFrame {
         catch(IOException e) {
             System.out.println("Failed to save map");
         }
-        System.exit(0);
     }
 }

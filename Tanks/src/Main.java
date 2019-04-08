@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Main extends JFrame {
-    
+
     private int tankSize = 30;
     private Color wallColor= new Color(100, 235, 96);
     private int mapWidth;
@@ -21,6 +21,7 @@ public class Main extends JFrame {
     private String winner;
     private boolean start = true;
     private int buttonX = 75;
+    private int createMapX;
     private int buttonY;
     private int buttonWidth = 200;
     private int buttonHeight = 100;
@@ -31,7 +32,13 @@ public class Main extends JFrame {
             super.mouseClicked(e);
             if(e.getX() <= buttonX + buttonWidth && e.getX() >= buttonX &&
                     e.getY() <= buttonY + buttonHeight && e.getY() >= buttonY) {
+                removeMouseListener(getButton);
                 start = false;
+            }
+            if(e.getX() <= createMapX + buttonWidth && e.getX() >= createMapX &&
+                    e.getY() <= buttonY + buttonHeight && e.getY() >= buttonY) {
+                dispose();
+                createMap.makeNewMap();
             }
         }
     };
@@ -70,8 +77,8 @@ public class Main extends JFrame {
     }
 
     public class GamePanel extends JPanel {
-        Tank tank = new Tank(50, 50, tankSize, Color.red);
-        Tank target = new Tank(map.getWidth()-60, map.getHeight()-60, tankSize, Color.blue);
+        Tank player1 = new Tank(50, 50, tankSize, Color.red);
+        Tank player2 = new Tank(map.getWidth()-60, map.getHeight()-60, tankSize, Color.blue);
         boolean left1, right1, down1, up1, left2, right2, down2, up2 = false;
         boolean clockwise1, counterClockwise1, clockwise2, counterClockwise2 = false;
         HashMap<Integer, Point> walls = generateWalls();
@@ -79,9 +86,8 @@ public class Main extends JFrame {
 
 
         private GamePanel() {
-
+            createMapX = map.getWidth()-buttonX-buttonWidth;
             buttonY = map.getHeight()-150;
-            buttonX = (map.getWidth()-buttonWidth)/2;
             setFont(gameFont);
             setFocusable(true);
             requestFocusInWindow();
@@ -183,10 +189,10 @@ public class Main extends JFrame {
             addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyReleased(KeyEvent e) {
-                    if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                        missiles.add(new Missile(tank, target));
-                    } else if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
-                        missiles.add(new Missile(target, tank));
+                    if (e.getKeyCode() == KeyEvent.VK_SPACE && player1.isAlive()) {
+                        missiles.add(new Missile(player1, player2));
+                    } else if (e.getKeyCode() == KeyEvent.VK_ALT && player2.isAlive()) {
+                        missiles.add(new Missile(player2, player1));
                     }
                 }
             });
@@ -197,101 +203,130 @@ public class Main extends JFrame {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Graphics2D g2d = (Graphics2D) g;
-            if(start) {
-                g2d.drawImage(startScreen, 0, 0, null);
-                g2d.setColor(Color.blue);
-                g2d.setFont(gameFont);
-                g2d.drawString("Tanks", getWidth()/2-120, 75);
-                g2d.setFont(new Font("TimesNewRoman", Font.PLAIN, 25));
-                g2d.drawString("(Inspired by the tank level from Tron)", getWidth()/2-200, 100);
-                g2d.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
-                g2d.setColor(Color.black);
-                g2d.setFont(gameFont.deriveFont(Font.BOLD, 25f));
-                g2d.drawString("Start", buttonX+60, buttonY+60);
-
-            }
+            if(start) startScreen(g2d);
             else {
-                removeMouseListener(getButton);
                 g2d.drawRect(0,0,getWidth(), getHeight());
-                int direction = 0;
-                int turn = 0;
-                if (up1) {
-                    direction = 1;
-                }
-                if (left1) {
-                    direction = 2;
-                }
-                if (down1) {
-                    direction = 3;
-                }
-                if (right1) {
-                    direction = 4;
-                }
-                if (clockwise1) {
-                    turn = 1;
-                }
-                if (counterClockwise1) {
-                    turn = 2;
-                }
-                tank.move(direction, walls);
-                tank.turn(turn);
-                direction = 0;
-                turn = 0;
-                if (up2) {
-                    direction = 1;
-                }
-                if (left2) {
-                    direction = 2;
-                }
-                if (down2) {
-                    direction = 3;
-                }
-                if (right2) {
-                    direction = 4;
-                }
-                if (clockwise2) {
-                    turn = 1;
-                }
-                if (counterClockwise2) {
-                    turn = 2;
-                }
-                target.move(direction, walls);
-                target.turn(turn);
+                int direction = getP1Move();
+                int turn = getP1Turret();
+                player1.move(direction, walls);
+                player1.turn(turn);
+                direction = getP2Move();
+                turn = getP2Turret();
+                player2.move(direction, walls);
+                player2.turn(turn);
 
                 if (gameOver) {
+                    animate(g2d);
                     g2d.setColor(winnerColor);
                     g2d.drawString(winner + " wins!", 100, getHeight() / 2);
-                } else {
-                    g2d.drawImage(map, 0, 0, null);
-                    ArrayList<Missile> deadMissiles = new ArrayList<>();
-                    for (Missile missile : missiles) {
-                        if (missile.alive) {
-                            missile.draw(g2d);
-                            missile.update(walls);
-                        } else {
-                            deadMissiles.add(missile);
-                        }
-                    }
-                    missiles.removeAll(deadMissiles);
-                    if (target.isAlive()) {
-                        target.draw(g2d);
-                    } else {
-                        gameOver = true;
-                        winnerColor = Color.red;
-                        winner = "Player 1";
-
-                    }
-                    if (tank.isAlive()) {
-                        tank.draw(g2d);
-
-                    } else {
-                        winner = "Player 2";
-                        winnerColor = Color.blue;
-                        gameOver = true;
-                    }
+                }
+                else {
+                    animate(g2d);
                 }
             }
             repaint();
+
+        }
+
+        private void animate(Graphics2D g2d) {
+            g2d.drawImage(map, 0, 0, null);
+            ArrayList<Missile> deadMissiles = new ArrayList<>();
+            for (Missile missile : missiles) {
+                if (missile.isAlive()) {
+                    missile.draw(g2d);
+                    missile.update(walls);
+                } else {
+                    deadMissiles.add(missile);
+                }
+            }
+            missiles.removeAll(deadMissiles);
+            if (player2.isAlive()) {
+                player2.draw(g2d);
+            } else {
+                gameOver = true;
+                winnerColor = Color.red;
+                winner = "Player 1";
+
+            }
+            if (player1.isAlive()) {
+                player1.draw(g2d);
+
+            } else {
+                winner = "Player 2";
+                winnerColor = Color.blue;
+                gameOver = true;
+            }
+
+        }
+
+        private int getP1Turret() {
+            if (clockwise1) {
+                return 1;
+            }
+            if (counterClockwise1) {
+                return 2;
+            }
+            return 0;
+        }
+
+        private int getP2Turret() {
+            if (clockwise2) {
+                return 1;
+            }
+            if (counterClockwise2) {
+                return 2;
+            }
+            return 0;
+        }
+
+        private int getP1Move() {
+            if (up1) {
+                return 1;
+            }
+            if (left1) {
+                return 2;
+            }
+            if (down1) {
+                return 3;
+            }
+            if (right1) {
+                return 4;
+            }
+            return 0;
+        }
+
+        private int getP2Move() {
+            if (up2) {
+                return 1;
+            }
+            if (left2) {
+                return 2;
+            }
+            if (down2) {
+                return 3;
+            }
+            if (right2) {
+                return 4;
+            }
+            return 0;
+        }
+
+        private void startScreen(Graphics2D g2d) {
+            g2d.drawImage(startScreen, 0, 0, null);
+            g2d.setColor(Color.blue);
+            g2d.setFont(gameFont);
+            g2d.drawString("Tanks", getWidth()/2-120, 75);
+            g2d.setFont(new Font("TimesNewRoman", Font.PLAIN, 25));
+            g2d.drawString("(Inspired by the player1 level from Tron)", getWidth()/2-200, 100);
+            g2d.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+            g2d.setColor(Color.black);
+            g2d.setFont(gameFont.deriveFont(Font.BOLD, 25f));
+            g2d.drawString("Start", buttonX+60, buttonY+60);
+            g2d.setColor(Color.red);
+            g2d.fillRect(createMapX, buttonY, buttonWidth, buttonHeight);
+            g2d.setColor(Color.black);
+            g2d.setFont(gameFont.deriveFont(Font.BOLD, 25f));
+            g2d.drawString("Custom Map", createMapX+10, buttonY+60);
 
         }
 

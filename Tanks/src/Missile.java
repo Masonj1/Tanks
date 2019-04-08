@@ -3,18 +3,18 @@ import java.util.HashMap;
 
 public class Missile {
 
-    int age = 0;
-    int velocity = 3;
-    int size = 10;
-    boolean alive = true;
-    Color color = Color.white;
-    Tank target;
-    float xVelocity;
-    float yVelocity;
-    float xPos;
-    float yPos;
+    private int age = 0;
+    private int velocity = 3;
+    private int size = 10;
+    private boolean alive = true;
+    private Color color = Color.white;
+    private Tank target;
+    private float xVelocity;
+    private float yVelocity;
+    private float xPos;
+    private float yPos;
 
-    public Missile(Tank owner, Tank otherPlayer) {
+    Missile(Tank owner, Tank otherPlayer) {
         xPos = owner.getxPos()+owner.getSize()/2-size;
         yPos = owner.getyPos()+owner.getSize()/2-size;
         target = otherPlayer;
@@ -22,7 +22,7 @@ public class Missile {
         yVelocity = (float) Math.cos(Math.toRadians(owner.getTurretAngle()))*velocity;
     }
 
-    public void update(HashMap<Integer, Point> walls) {
+    void update(HashMap<Integer, Point> walls) {
         if(xVelocity > 0 && walls.containsValue(new Point((int) xPos+size*2, (int) yPos+size)) ||
                 xVelocity < 0 && walls.containsValue(new Point((int) xPos, (int) yPos+size))) {
             xVelocity *= -1;
@@ -35,16 +35,20 @@ public class Missile {
         yPos += yVelocity;
         age++;
         if(xPos+size >= target.getxPos() && xPos <= target.getxPos()+target.getSize() && yPos+size >= target.getyPos() &&
-                yPos <= target.getyPos()+target.getSize()) {
+                yPos <= target.getyPos()+target.getSize() && target.isAlive()) {
             alive = false;
             target.kill();
         }
-        if(age == 200) {
+        if(age >= 200) {
             alive = false;
         }
     }
 
-    public void draw(Graphics2D g2d) {
+    boolean isAlive() {
+        return alive;
+    }
+
+    void draw(Graphics2D g2d) {
         Color oldColor = g2d.getColor();
         g2d.setColor(color);
         g2d.fillOval((int) xPos+size/2, (int) yPos+size/2, size, size);
