@@ -1,4 +1,7 @@
+import javax.sound.sampled.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -14,6 +17,7 @@ public class Tank {
     private int size = 30;
     private int turretAngle = 0;
     private boolean alive = true;
+    private File explosionFile = new File("sounds/Explosion.wav");
 
     public Tank(int x, int y, int tankSize, Color tankColor) {
         initialX = x;
@@ -79,6 +83,16 @@ public class Tank {
     }
 
     public void kill() {
+        try {
+            AudioInputStream explosionInput = AudioSystem.getAudioInputStream(explosionFile);
+            Clip killTank = AudioSystem.getClip();
+            killTank.open(explosionInput);
+            killTank.start();
+        }
+        catch(UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            System.err.println("Unable to play explosion file");
+            System.err.println(e);
+        }
         alive = false;
     }
 

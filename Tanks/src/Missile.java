@@ -1,5 +1,11 @@
+import javax.sound.sampled.*;
 import java.awt.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.HashMap;
+
+import static javax.sound.sampled.AudioSystem.getAudioInputStream;
 
 public class Missile {
 
@@ -13,8 +19,19 @@ public class Missile {
     private float yVelocity;
     private float xPos;
     private float yPos;
+    private Clip soundEffects;
+    private String fireFile = "sounds/Fire.wav";
+    private String ricochetFile = "sounds/Ricochet.wav";
 
     Missile(Tank owner, Tank otherPlayer) {
+        try {
+            soundEffects = AudioSystem.getClip();
+            soundEffects.open(loadSound(fireFile));
+            soundEffects.start();
+        }
+        catch(LineUnavailableException | IOException e) {
+            System.err.println("Unable to play fire sound");
+        }
         xPos = owner.getxPos()+owner.getSize()/2-size;
         yPos = owner.getyPos()+owner.getSize()/2-size;
         target = otherPlayer;
@@ -25,11 +42,27 @@ public class Missile {
     void update(HashMap<Integer, Point> walls) {
         if(xVelocity > 0 && walls.containsValue(new Point((int) xPos+size*2, (int) yPos+size)) ||
                 xVelocity < 0 && walls.containsValue(new Point((int) xPos, (int) yPos+size))) {
+            try {
+                soundEffects = AudioSystem.getClip();
+                soundEffects.open(loadSound(ricochetFile));
+                soundEffects.start();
+            }
+            catch(LineUnavailableException | IOException e) {
+                System.err.println("Unable to play ricochet sound");
+            }
             xVelocity *= -1;
         }
         if(yVelocity > 0 && walls.containsValue(new Point((int) xPos+size, (int) yPos+size*2)) ||
                 yVelocity < 0 && walls.containsValue(new Point((int) xPos+size, (int) yPos))) {
             yVelocity *= -1;
+            try {
+                soundEffects = AudioSystem.getClip();
+                soundEffects.open(loadSound(ricochetFile));
+                soundEffects.start();
+            }
+            catch(LineUnavailableException | IOException e) {
+                System.err.println("Unable to play ricochet sound");
+            }
         }
         xPos += xVelocity;
         yPos += yVelocity;
@@ -41,6 +74,17 @@ public class Missile {
         }
         if(age >= 200) {
             alive = false;
+        }
+    }
+
+    private AudioInputStream loadSound(String fileName) {
+        try {
+            return AudioSystem.getAudioInputStream(new File(fileName));
+        }
+        catch(IOException | UnsupportedAudioFileException e) {
+            System.err.println("Unable to open " + fileName);
+            System.err.println(e);
+            return null;
         }
     }
 

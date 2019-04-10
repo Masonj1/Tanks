@@ -1,4 +1,5 @@
 import javax.imageio.ImageIO;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -26,15 +27,18 @@ public class createMap extends JFrame {
     private ArrayList<Point> whites = new ArrayList<>();
     // Creates an arrayList to track all cells covered in the current move
     private ArrayList<Point> currentMove = new ArrayList<>();
+    // Creates a clip to play and stop background music
+    private Clip backgroundMusic;
 
     private class ButtonPanel extends JPanel {
         private ButtonPanel() {
             setPreferredSize(new Dimension(750, 100));
-            JButton saveButton = new JButton("Save");
+            JButton saveButton = new JButton("Save & Exit");
             JButton playButton = new JButton("Play");
             playButton.addActionListener((ActionListener) -> {
                 savePic();
                 dispose();
+                backgroundMusic.stop();
                 Main.main(null);
             });
             saveButton.addActionListener((ActionListener) -> {
@@ -162,7 +166,7 @@ public class createMap extends JFrame {
     }
 
 
-    private createMap() {
+    private createMap(Clip backgroundMusic) {
         // Sets the program to exit after the user closes the graphics window and initializes the window with a size of
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(750, 700);
@@ -170,15 +174,15 @@ public class createMap extends JFrame {
         // Creates a new DrawingPanel with the grid size given by command line arguments
         add(new DrawingPanel());
         add(new ButtonPanel());
-
+        this.backgroundMusic = backgroundMusic;
     }
 
 
-    static void makeNewMap() {
+    static void makeNewMap(Clip backgroundMusic) {
         EventQueue.invokeLater(() -> {
             // Tries to use command line arguments to set the dimensions of the grid and uses the default dimensions if
             // that fails
-            new createMap().setVisible(true);
+            new createMap(backgroundMusic).setVisible(true);
         });
 
     }

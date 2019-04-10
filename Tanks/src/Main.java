@@ -1,4 +1,5 @@
 import javax.imageio.ImageIO;
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -26,6 +27,16 @@ public class Main extends JFrame {
     private int buttonWidth = 200;
     private int buttonHeight = 100;
     private Color winnerColor;
+    private String introMusic = "sounds/introMusic.wav";
+    private String gameMusic = "sounds/gameMusic.wav";
+    private String mapCreation = "sounds/creationMusic.wav";
+    private Clip backgroundMusic;
+    private boolean left1, right1, down1, up1, left2, right2, down2, up2 = false;
+    private boolean clockwise1, counterClockwise1, clockwise2, counterClockwise2 = false;
+    Tank player1 = new Tank(50, 50, tankSize, Color.red);
+    Tank player2 = new Tank(100, 50, tankSize, Color.blue);
+    private HashMap<Integer, Point> walls;
+
     private MouseAdapter getButton = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent e) {
@@ -33,18 +44,51 @@ public class Main extends JFrame {
             if(e.getX() <= buttonX + buttonWidth && e.getX() >= buttonX &&
                     e.getY() <= buttonY + buttonHeight && e.getY() >= buttonY) {
                 removeMouseListener(getButton);
+                backgroundMusic.stop();
+                try {
+                    objectUpdater gameController = new objectUpdater();
+                    gameController.start();
+                    backgroundMusic = AudioSystem.getClip();
+                    backgroundMusic.open(loadSound(gameMusic));
+                    backgroundMusic.loop(Clip.LOOP_CONTINUOUSLY);
+                }
+                catch(IOException | LineUnavailableException | NullPointerException ex) {
+                    System.err.println("Unable to play background music");
+                    System.err.println(ex);
+                }
                 start = false;
             }
             if(e.getX() <= createMapX + buttonWidth && e.getX() >= createMapX &&
                     e.getY() <= buttonY + buttonHeight && e.getY() >= buttonY) {
                 dispose();
-                createMap.makeNewMap();
+                backgroundMusic.stop();
+                try {
+                    backgroundMusic = AudioSystem.getClip();
+                    backgroundMusic.open(loadSound(mapCreation));
+                    backgroundMusic.loop(Clip.LOOP_CONTINUOUSLY);
+                }
+                catch(IOException | LineUnavailableException | NullPointerException ex) {
+                    System.err.println("Unable to play background music");
+                    System.err.println(ex);
+                }
+                createMap.makeNewMap(backgroundMusic);
             }
         }
     };
 
-    private HashMap<Integer, Point> generateWalls() {
-        HashMap<Integer, Point> walls = new HashMap<>();
+    private AudioInputStream loadSound(String fileName) {
+        try {
+            return AudioSystem.getAudioInputStream(new File(fileName));
+        }
+        catch(IOException | UnsupportedAudioFileException e) {
+            System.err.println("Unable to open " + fileName);
+            System.err.println(e);
+            return null;
+        }
+    }
+
+    private void generateWalls() {
+        walls = new HashMap<>();
         int key = 0;
         for(int i = 0; i < mapWidth; i++) {
             for(int j = 0; j < mapHeight; j++) {
@@ -58,7 +102,6 @@ public class Main extends JFrame {
                 }
             }
         }
-        return walls;
     }
 
     private Font loadFont() {
@@ -77,15 +120,21 @@ public class Main extends JFrame {
     }
 
     public class GamePanel extends JPanel {
-        Tank player1 = new Tank(50, 50, tankSize, Color.red);
-        Tank player2 = new Tank(map.getWidth()-60, map.getHeight()-60, tankSize, Color.blue);
-        boolean left1, right1, down1, up1, left2, right2, down2, up2 = false;
-        boolean clockwise1, counterClockwise1, clockwise2, counterClockwise2 = false;
-        HashMap<Integer, Point> walls = generateWalls();
         Font gameFont = loadFont();
 
 
         private GamePanel() {
+            generateWalls();
+            try {
+                backgroundMusic = AudioSystem.getClip();
+                AudioInputStream soundInput = loadSound(introMusic);
+                backgroundMusic.open(soundInput);
+                backgroundMusic.loop(Clip.LOOP_CONTINUOUSLY);
+            }
+            catch(LineUnavailableException | IOException | NullPointerException e) {
+                System.err.println("Unable to play intro music");
+                System.err.println(e);
+            }
             createMapX = map.getWidth()-buttonX-buttonWidth;
             buttonY = map.getHeight()-150;
             setFont(gameFont);
@@ -206,110 +255,36 @@ public class Main extends JFrame {
             if(start) startScreen(g2d);
             else {
                 g2d.drawRect(0,0,getWidth(), getHeight());
-                int direction = getP1Move();
-                int turn = getP1Turret();
-                player1.move(direction, walls);
-                player1.turn(turn);
-                direction = getP2Move();
-                turn = getP2Turret();
-                player2.move(direction, walls);
-                player2.turn(turn);
-
+                g2d.drawImage(map, 0, 0, null);
+                for (Missile missile : missiles) {
+                    missile.draw(g2d);
+                }
                 if (gameOver) {
-                    animate(g2d);
                     g2d.setColor(winnerColor);
                     g2d.drawString(winner + " wins!", 100, getHeight() / 2);
                 }
+                if (!player2.isAlive()) {
+                    gameOver = true;
+                    winnerColor = Color.red;
+                    winner = "Player 1";
+
+                }
                 else {
-                    animate(g2d);
+                    player2.draw(g2d);
+                }
+                if (!player1.isAlive()) {
+                    winner = "Player 2";
+                    winnerColor = Color.blue;
+                    gameOver = true;
+                }
+                else {
+                    player1.draw(g2d);
                 }
             }
             repaint();
 
         }
 
-        private void animate(Graphics2D g2d) {
-            g2d.drawImage(map, 0, 0, null);
-            ArrayList<Missile> deadMissiles = new ArrayList<>();
-            for (Missile missile : missiles) {
-                if (missile.isAlive()) {
-                    missile.draw(g2d);
-                    missile.update(walls);
-                } else {
-                    deadMissiles.add(missile);
-                }
-            }
-            missiles.removeAll(deadMissiles);
-            if (player2.isAlive()) {
-                player2.draw(g2d);
-            } else {
-                gameOver = true;
-                winnerColor = Color.red;
-                winner = "Player 1";
-
-            }
-            if (player1.isAlive()) {
-                player1.draw(g2d);
-
-            } else {
-                winner = "Player 2";
-                winnerColor = Color.blue;
-                gameOver = true;
-            }
-
-        }
-
-        private int getP1Turret() {
-            if (clockwise1) {
-                return 1;
-            }
-            if (counterClockwise1) {
-                return 2;
-            }
-            return 0;
-        }
-
-        private int getP2Turret() {
-            if (clockwise2) {
-                return 1;
-            }
-            if (counterClockwise2) {
-                return 2;
-            }
-            return 0;
-        }
-
-        private int getP1Move() {
-            if (up1) {
-                return 1;
-            }
-            if (left1) {
-                return 2;
-            }
-            if (down1) {
-                return 3;
-            }
-            if (right1) {
-                return 4;
-            }
-            return 0;
-        }
-
-        private int getP2Move() {
-            if (up2) {
-                return 1;
-            }
-            if (left2) {
-                return 2;
-            }
-            if (down2) {
-                return 3;
-            }
-            if (right2) {
-                return 4;
-            }
-            return 0;
-        }
 
         private void startScreen(Graphics2D g2d) {
             g2d.drawImage(startScreen, 0, 0, null);
@@ -317,7 +292,7 @@ public class Main extends JFrame {
             g2d.setFont(gameFont);
             g2d.drawString("Tanks", getWidth()/2-120, 75);
             g2d.setFont(new Font("TimesNewRoman", Font.PLAIN, 25));
-            g2d.drawString("(Inspired by the player1 level from Tron)", getWidth()/2-200, 100);
+            g2d.drawString("(Inspired by the tank level from Tron)", getWidth()/2-200, 100);
             g2d.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
             g2d.setColor(Color.black);
             g2d.setFont(gameFont.deriveFont(Font.BOLD, 25f));
@@ -329,9 +304,87 @@ public class Main extends JFrame {
             g2d.drawString("Custom Map", createMapX+10, buttonY+60);
 
         }
-
     }
 
+    private class objectUpdater extends Thread {
+
+        @Override
+        public void run() {
+            Timer updateAnimationTimer = new Timer(33, (ActionListener) -> {
+                int direction = getP1Move();
+                int turn = getP1Turret();
+                player1.move(direction, walls);
+                player1.turn(turn);
+                direction = getP2Move();
+                turn = getP2Turret();
+                player2.move(direction, walls);
+                player2.turn(turn);
+                ArrayList<Missile> deadMissiles = new ArrayList<>();
+                for (Missile missile : missiles) {
+                    if (missile.isAlive()) {
+                        missile.update(walls);
+                    } else {
+                        deadMissiles.add(missile);
+                    }
+                }
+                missiles.removeAll(deadMissiles);
+            });
+            updateAnimationTimer.start();
+        }
+    }
+
+    private int getP1Turret() {
+        if (clockwise1) {
+            return 1;
+        }
+        if (counterClockwise1) {
+            return 2;
+        }
+        return 0;
+    }
+
+    private int getP2Turret() {
+        if (clockwise2) {
+            return 1;
+        }
+        if (counterClockwise2) {
+            return 2;
+        }
+        return 0;
+    }
+
+    private int getP1Move() {
+        if (up1) {
+            return 1;
+        }
+        if (left1) {
+            return 2;
+        }
+        if (down1) {
+            return 3;
+        }
+        if (right1) {
+            return 4;
+        }
+        return 0;
+    }
+
+
+    private int getP2Move() {
+        if (up2) {
+            return 1;
+        }
+        if (left2) {
+            return 2;
+        }
+        if (down2) {
+            return 3;
+        }
+        if (right2) {
+            return 4;
+        }
+        return 0;
+    }
 
 
     private Main() {
