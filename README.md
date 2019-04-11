@@ -9,6 +9,7 @@ Contributions:
     - Created the environment for the tanks to be drawn in
     - Created start screen and game over screen
     - Transferred the code to a multithreaded design
+    - Added the option to play again after game over
   Franky
     * Created a program for users to create their own maps for the game
         - Allowed users to save files to be used as maps
