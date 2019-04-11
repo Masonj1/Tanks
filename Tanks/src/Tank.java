@@ -2,12 +2,11 @@ import javax.sound.sampled.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 
 public class Tank {
 
-    private int tankDirection = 1;
+    private int tankDirection = 0;
     private int initialX;
     private int initialY;
     private int xPos;
@@ -29,23 +28,25 @@ public class Tank {
     }
 
 
-    public void move(int direction, HashMap<Integer, Point> walls) {
-        tankDirection = direction;
-        if (!walls.containsValue(new Point(xPos, yPos)) &&
-                !walls.containsValue(new Point(xPos + size / 2, yPos)) &&
-                !walls.containsValue(new Point(xPos + size, yPos)) && direction == 1) {
+    public void move(int direction, HashSet<Point> walls) {
+        if(direction != 0) {
+            tankDirection = direction;
+        }
+        if (!walls.contains(new Point(xPos, yPos-1)) &&
+                !walls.contains(new Point(xPos + size / 2, yPos-1)) &&
+                !walls.contains(new Point(xPos + size, yPos-1)) && direction == 1) {
             yPos--;
-        } else if (!walls.containsValue(new Point(xPos, yPos)) &&
-                !walls.containsValue(new Point(xPos, yPos + size / 2)) &&
-                !walls.containsValue(new Point(xPos, yPos + size)) && direction == 2) {
+        } else if (!walls.contains(new Point(xPos-1, yPos)) &&
+                !walls.contains(new Point(xPos-1, yPos + size / 2)) &&
+                !walls.contains(new Point(xPos-1, yPos + size)) && direction == 2) {
             xPos--;
-        } else if (!walls.containsValue(new Point(xPos, yPos + size)) &&
-                !walls.containsValue(new Point(xPos + size / 2, yPos + size)) &&
-                !walls.containsValue(new Point(xPos + size, yPos + size)) && direction == 3) {
+        } else if (!walls.contains(new Point(xPos, yPos + size+1)) &&
+                !walls.contains(new Point(xPos + size / 2, yPos + size+1)) &&
+                !walls.contains(new Point(xPos + size, yPos + size+1)) && direction == 3) {
             yPos++;
-        } else if (!walls.containsValue(new Point(xPos + size, yPos)) &&
-                !walls.containsValue(new Point(xPos + size, yPos + size / 2)) &&
-                !walls.containsValue(new Point(xPos + size, yPos + size)) && direction == 4) {
+        } else if (!walls.contains(new Point(xPos + size+1, yPos)) &&
+                !walls.contains(new Point(xPos + size+1, yPos + size / 2)) &&
+                !walls.contains(new Point(xPos + size+1, yPos + size)) && direction == 4) {
             xPos++;
         }
         if (yPos - size >= 225 && yPos + size <= 325 && xPos >= 350 && xPos <= 450) {
@@ -99,13 +100,25 @@ public class Tank {
     public void draw(Graphics2D g2d) {
         Color oldColor = g2d.getColor();
         g2d.setColor(color);
-        g2d.fillRect(xPos + 22, yPos, 8, 30);
-        g2d.setColor(treadColor);
-        g2d.drawRect(xPos + 22, yPos, 8, 30);
-        g2d.setColor(color);
-        g2d.fillRect(xPos, yPos, 8, 30);
-        g2d.setColor(treadColor);
-        g2d.drawRect(xPos, yPos, 8, 30);
+        if(tankDirection % 2 == 1 || tankDirection == 0) {
+            g2d.fillRect(xPos + 22, yPos, 8, 30);
+            g2d.setColor(treadColor);
+            g2d.drawRect(xPos + 22, yPos, 8, 30);
+            g2d.setColor(color);
+            g2d.fillRect(xPos, yPos, 8, 30);
+            g2d.setColor(treadColor);
+            g2d.drawRect(xPos, yPos, 8, 30);
+        }
+        else {
+            g2d.fillRect(xPos, yPos + 22, 30, 8);
+            g2d.setColor(treadColor);
+            g2d.drawRect(xPos, yPos + 22, 30, 8);
+            g2d.setColor(color);
+            g2d.fillRect(xPos, yPos, 30, 8);
+            g2d.setColor(treadColor);
+            g2d.drawRect(xPos, yPos, 30, 8);
+
+        }
         //main compartment
         g2d.setColor(color);
         g2d.fillRect(xPos + 5, yPos + 5, 20, 20);

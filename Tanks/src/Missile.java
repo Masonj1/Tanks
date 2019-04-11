@@ -1,11 +1,8 @@
 import javax.sound.sampled.*;
 import java.awt.*;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
-
-import static javax.sound.sampled.AudioSystem.getAudioInputStream;
+import java.util.HashSet;
 
 public class Missile {
 
@@ -39,9 +36,9 @@ public class Missile {
         yVelocity = (float) Math.cos(Math.toRadians(owner.getTurretAngle()))*velocity;
     }
 
-    void update(HashMap<Integer, Point> walls) {
-        if(xVelocity > 0 && walls.containsValue(new Point((int) xPos+size*2, (int) yPos+size)) ||
-                xVelocity < 0 && walls.containsValue(new Point((int) xPos, (int) yPos+size))) {
+    void update(HashSet<Point> walls) {
+        if(xVelocity > 0 && walls.contains(new Point((int) xPos+size*2, (int) yPos+size)) ||
+                xVelocity < 0 && walls.contains(new Point((int) xPos, (int) yPos+size))) {
             try {
                 soundEffects = AudioSystem.getClip();
                 soundEffects.open(loadSound(ricochetFile));
@@ -52,8 +49,8 @@ public class Missile {
             }
             xVelocity *= -1;
         }
-        if(yVelocity > 0 && walls.containsValue(new Point((int) xPos+size, (int) yPos+size*2)) ||
-                yVelocity < 0 && walls.containsValue(new Point((int) xPos+size, (int) yPos))) {
+        if(yVelocity > 0 && walls.contains(new Point((int) xPos+size, (int) yPos+size*2)) ||
+                yVelocity < 0 && walls.contains(new Point((int) xPos+size, (int) yPos))) {
             yVelocity *= -1;
             try {
                 soundEffects = AudioSystem.getClip();

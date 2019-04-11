@@ -2,7 +2,6 @@ import javax.imageio.ImageIO;
 import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -55,6 +54,7 @@ public class createMap extends JFrame {
     private class DrawingPanel extends JPanel{
 
         private DrawingPanel() {
+            setTitle("Tanks - Map Creation");
             setPreferredSize(new Dimension(750, 600));
             // Sets the dimensions of the grid
             xDim = 30;
@@ -171,7 +171,7 @@ public class createMap extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(750, 700);
         setLayout(new FlowLayout());
-        // Creates a new DrawingPanel with the grid size given by command line arguments
+        // Creates a new DrawingPanel
         add(new DrawingPanel());
         add(new ButtonPanel());
         this.backgroundMusic = backgroundMusic;
@@ -185,10 +185,6 @@ public class createMap extends JFrame {
             new createMap(backgroundMusic).setVisible(true);
         });
 
-    }
-
-    private void playGame() {
-        savePic();
     }
 
     private void savePic(){
