@@ -19,7 +19,7 @@ Space		Fire			Period
 To start the game, run Main.java and click the start button.
 
 In addition to the game itself, there is also a program to create custom maps
-for the game.  To create a map, run createMap.java and fill in the squares that
+for the game.  To create a map, click the 'Create Map' button and fill in the squares that
 you want to set as walls.  To go back to the default map, delete Background.jpg
 
 Contributions:
