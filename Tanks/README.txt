@@ -42,6 +42,7 @@ Mason
 
     - Added the option to play again after game over
 
+    - Implemented computer movement method to create one player mode
 
 Franky
 
@@ -56,7 +57,7 @@ Franky
     - Created method to draw tanks and their turrets
 
     - Incorporated sounds into game events
-
+    - Created a method for computer controlled tanks for one player mode
 
 Font: Zorque by Typodermic Fonts
 

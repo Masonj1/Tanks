@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.lang.Math;
 
-public class createMap extends JFrame {
+class createMap extends JFrame {
 
     private Color wallColor = new Color(100, 235, 96);
     private Color teleporterColor = new Color(218, 82, 190);
@@ -31,9 +31,12 @@ public class createMap extends JFrame {
 
     private class ButtonPanel extends JPanel {
         private ButtonPanel() {
-            setPreferredSize(new Dimension(750, 100));
+            // Sets the preferred width to the frame width and the height to 50
+            setPreferredSize(new Dimension(getWidth(), 50));
+            // Creates buttons to save and play the map
             JButton saveButton = new JButton("Save & Exit");
-            JButton playButton = new JButton("Play");
+            JButton playButton = new JButton("Play Map");
+            // Attaches listeners with appropriate functions to the buttons
             playButton.addActionListener((ActionListener) -> {
                 savePic();
                 dispose();
@@ -44,6 +47,7 @@ public class createMap extends JFrame {
                 savePic();
                 System.exit(0);
             });
+            // Adds the buttons to the panel
             add(saveButton);
             add(playButton);
 
@@ -170,10 +174,10 @@ public class createMap extends JFrame {
         // Sets the program to exit after the user closes the graphics window and initializes the window with a size of
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(750, 700);
-        setLayout(new FlowLayout());
-        // Creates a new DrawingPanel
-        add(new DrawingPanel());
-        add(new ButtonPanel());
+        // Creates a new DrawingPanel for the map and a ButtonPanel for the save and play buttons
+        add(new DrawingPanel(), BorderLayout.CENTER);
+        add(new ButtonPanel(), BorderLayout.SOUTH);
+        // Setst the background music clip to the main program's clip
         this.backgroundMusic = backgroundMusic;
     }
 
