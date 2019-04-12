@@ -428,6 +428,10 @@ public class Main extends JFrame {
                 for (Missile missile : missiles) {
                     // If a missile is alive, it keeps moving, otherwise it is added to the dead list for deletion
                     if (missile.isAlive()) {
+                        // Missiles move three times as fast as tanks, but each movement must be checked for collisions
+                        // indepentently so they are handled separately rather than by changing position all at once
+                        missile.update(walls);
+                        missile.update(walls);
                         missile.update(walls);
                     } else {
                         deadMissiles.add(missile);

@@ -2,6 +2,8 @@ import javax.sound.sampled.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 class Tank {
@@ -42,7 +44,33 @@ class Tank {
         color = tankColor;
     }
 
-
+    /** Stores the space that the tank takes up as an ArrayList of ArrayLists of Points
+     *
+     * @return - An ArrayList containing all points on the perimeter of the tank, organized top, left, bottom, then right
+     */
+    private ArrayList<ArrayList<Point>> TankSpace() {
+        // Stores all points on the specified side of the tank
+        ArrayList<Point> right = new ArrayList<>();
+        ArrayList<Point> left = new ArrayList<>();
+        ArrayList<Point> top = new ArrayList<>();
+        ArrayList<Point> bottom = new ArrayList<>();
+        // Stores all of the perimeter ArrayLists
+        ArrayList<ArrayList<Point>> tankSpace = new ArrayList<>();
+        // Adds all points on the perimeter of the tank to their respective ArrayLists
+        for(int i = 0; i <= size; i++) {
+            top.add(new Point(xPos+i, yPos));
+            bottom.add(new Point(xPos+i, yPos+size));
+            left.add(new Point(xPos, yPos+i));
+            right.add(new Point(xPos+size, yPos+i));
+        }
+        // Adds the ArrayLists comprising the tanks perimeter together
+        tankSpace.add(top);
+        tankSpace.add(left);
+        tankSpace.add(bottom);
+        tankSpace.add(right);
+        // Returns the result
+        return tankSpace;
+    }
     /** Moves the tank according to directional input
      *
      * @param direction - the direction that the tank is trying to go
@@ -53,23 +81,52 @@ class Tank {
         if(direction != 0) {
             tankDirection = direction;
         }
+        boolean move = true;
+        ArrayList<ArrayList<Point>> tankSpace = TankSpace();
         // The tank moves in the direction it is assigned as long as there is no wall
-        if (!walls.contains(new Point(xPos, yPos-1)) &&
-                !walls.contains(new Point(xPos + size / 2, yPos-1)) &&
-                !walls.contains(new Point(xPos + size, yPos-1)) && direction == 1) {
-            yPos--;
-        } else if (!walls.contains(new Point(xPos-1, yPos)) &&
-                !walls.contains(new Point(xPos-1, yPos + size / 2)) &&
-                !walls.contains(new Point(xPos-1, yPos + size)) && direction == 2) {
-            xPos--;
-        } else if (!walls.contains(new Point(xPos, yPos + size+1)) &&
-                !walls.contains(new Point(xPos + size / 2, yPos + size+1)) &&
-                !walls.contains(new Point(xPos + size, yPos + size+1)) && direction == 3) {
-            yPos++;
-        } else if (!walls.contains(new Point(xPos + size+1, yPos)) &&
-                !walls.contains(new Point(xPos + size+1, yPos + size / 2)) &&
-                !walls.contains(new Point(xPos + size+1, yPos + size)) && direction == 4) {
-            xPos++;
+        if (direction == 1) {
+            // The top of the tank is checked for walls before moving up
+            for(Point p : tankSpace.get(0)) {
+                if(walls.contains(new Point((int) p.getX(), (int) p.getY()-1))) {
+                    move = false;
+                }
+            }
+            if(move) {
+                yPos--;
+            }
+        }
+        else if (direction == 2) {
+            // The left side of the tank is checked for walls before moving left
+            for(Point p : tankSpace.get(1)) {
+                if(walls.contains(new Point((int) p.getX()-1, (int) p.getY()))) {
+                    move = false;
+                }
+            }
+            if(move) {
+                xPos--;
+            }
+        }
+        else if (direction == 3) {
+            // The bottom of the tank is checked for walls before moving down
+            for(Point p : tankSpace.get(2)) {
+                if(walls.contains(new Point((int) p.getX(), (int) p.getY()+1))) {
+                    move = false;
+                }
+            }
+            if(move) {
+                yPos++;
+            }
+        }
+        else if (direction == 4) {
+            // The right side of the tank is checked for walls before moving right
+            for(Point p : tankSpace.get(3)) {
+                if(walls.contains(new Point((int) p.getX()+1, (int) p.getY()))) {
+                    move = false;
+                }
+            }
+            if(move) {
+                xPos++;
+            }
         }
         // If the tank is in the teleporter then it is sent back to its initial position
         if (yPos - size >= 225 && yPos + size <= 325 && xPos >= 350 && xPos <= 450) {

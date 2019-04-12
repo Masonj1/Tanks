@@ -8,8 +8,8 @@ class Missile {
 
     // Tracks how many frames a missile has been alive for
     private int age = 0;
-    // Sets the size of each missile
-    private int size = 10;
+    // Sets the radius of each missile
+    private int radius = 10;
     // Each missile starts out alive and lasts until its age expires
     private boolean alive = true;
     // Missiles are white by default
@@ -31,8 +31,6 @@ class Missile {
      * @param otherPlayer - the tank that the missile is fired at
      */
     Missile(Tank owner, Tank otherPlayer) {
-        // The speed of the missile defaults to 3
-        int speed = 3;
         // Attempts to load and play the firing sound effect at the initialization of each missile
         try {
             soundEffects = AudioSystem.getClip();
@@ -45,13 +43,13 @@ class Missile {
             System.err.println("Unable to play fire sound");
         }
         // The initial position of the missile is set to the initial position of its owner
-        xPos = owner.getxPos()+owner.getSize()/2-size;
-        yPos = owner.getyPos()+owner.getSize()/2-size;
+        xPos = owner.getxPos()+owner.getSize()/2- radius;
+        yPos = owner.getyPos()+owner.getSize()/2- radius;
         // The target is set
         target = otherPlayer;
         // The x and y velocities are determined by the angle of the owner's turret
-        xVelocity = (float) Math.sin(Math.toRadians(owner.getTurretAngle()))* speed;
-        yVelocity = (float) Math.cos(Math.toRadians(owner.getTurretAngle()))* speed;
+        xVelocity = (float) Math.sin(Math.toRadians(owner.getTurretAngle()));
+        yVelocity = (float) Math.cos(Math.toRadians(owner.getTurretAngle()));
     }
 
     /** Moves missiles and causes them to bounce off walls
@@ -59,11 +57,26 @@ class Missile {
      * @param walls - the set of all walls in the game
      */
     void update(HashSet<Point> walls) {
+        // The max number of movements a missile can make before expiring
+        int maxAge = 600;
         // Stores the path to the ricochet sound file
         String ricochetFile = "sounds/Ricochet.wav";
-        // Checks if the missile hits a wall
-        if(xVelocity > 0 && walls.contains(new Point((int) xPos+size*2, (int) yPos+size)) ||
-                xVelocity < 0 && walls.contains(new Point((int) xPos, (int) yPos+size))) {
+        // Checks if the missile hits a wall in the x or y direction
+        boolean hitWallX = false;
+        boolean hitWallY = false;
+        // Runs through every point on the perimeter of the missile
+        for(int i = 1; i < radius*2; i++) {
+            if(walls.contains(new Point((int) xPos+i, (int) yPos)) ||
+                    walls.contains(new Point((int) xPos+i, (int) yPos+radius*2))) {
+                hitWallY = true;
+            }
+            if(walls.contains(new Point((int) xPos, (int) yPos+i)) ||
+                    walls.contains(new Point((int) xPos+radius*2, (int) yPos+i))) {
+                hitWallX = true;
+            }
+        }
+        // If the missile hits a wall, it rebounds in the opposite direction
+        if(hitWallX || hitWallY) {
             try {
                 // Plays the ricochet sound
                 soundEffects = AudioSystem.getClip();
@@ -71,24 +84,15 @@ class Missile {
                 soundEffects.start();
             }
             // Tells the console if the ricochet sound failed to play
-            catch(LineUnavailableException | IOException e) {
+            catch (LineUnavailableException | IOException e) {
                 System.err.println("Unable to play ricochet sound");
             }
+        }
+        if(hitWallX) {
             // Missile rebounds off the wall into the other direction
             xVelocity *= -1;
         }
-        if(yVelocity > 0 && walls.contains(new Point((int) xPos+size, (int) yPos+size*2)) ||
-                yVelocity < 0 && walls.contains(new Point((int) xPos+size, (int) yPos))) {
-            try {
-                // Plays the ricochet sound
-                soundEffects = AudioSystem.getClip();
-                soundEffects.open(loadSound(ricochetFile));
-                soundEffects.start();
-            }
-            // Tells the console if the ricochet sound failed to play
-            catch(LineUnavailableException | IOException e) {
-                System.err.println("Unable to play ricochet sound");
-            }
+        if(hitWallY) {
             // Missile rebounds off the wall into the other direction
             yVelocity *= -1;
         }
@@ -98,13 +102,13 @@ class Missile {
         // Adds one frame to the age of the missile
         age++;
         // If the missile hits the target tank, it kills it and itself
-        if(xPos+size >= target.getxPos() && xPos <= target.getxPos()+target.getSize() && yPos+size >= target.getyPos() &&
+        if(xPos+ radius >= target.getxPos() && xPos <= target.getxPos()+target.getSize() && yPos+ radius >= target.getyPos() &&
                 yPos <= target.getyPos()+target.getSize() && target.isAlive()) {
             alive = false;
             target.kill();
         }
-        // if the missile's age expires then it dies
-        if(age >= 200) {
+        // If the missile's age expires then it dies
+        if(age >= maxAge) {
             alive = false;
         }
     }
@@ -139,7 +143,7 @@ class Missile {
         Color oldColor = g2d.getColor();
         // Draws the missile at its location
         g2d.setColor(color);
-        g2d.fillOval((int) xPos+size/2, (int) yPos+size/2, size, size);
+        g2d.fillOval((int) xPos+ radius /2, (int) yPos+ radius /2, radius, radius);
         // Returns the graphics object to its original color
         g2d.setColor(oldColor);
     }
