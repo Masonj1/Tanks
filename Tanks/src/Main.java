@@ -11,11 +11,15 @@ import java.util.HashSet;
 
 public class Main extends JFrame {
 
+    // Determines whether to check the object updating thread's time spent at each frame
+    private boolean trackPerformance = false;
+    // Keeps system time at startup to track performance metrics
+    private long startTime = System.nanoTime();
     // Creates two tank objects
     private Tank player1;
     private Tank player2;
     // Sets the color to look for in determining where walls are on the map
-    private Color wallColor= new Color(100, 235, 96);
+    private Color wallColor = new Color(100, 235, 96);
     // Variables are created to store the map's width and height when it is loaded
     private int mapWidth;
     private int mapHeight;
@@ -55,7 +59,7 @@ public class Main extends JFrame {
             String gameMusic = "sounds/gameMusic.wav";
             String mapCreation = "sounds/creationMusic.wav";
             // Checks if the user clicked the start button
-            if(e.getX() <= buttonX + buttonWidth && e.getX() >= buttonX &&
+            if (e.getX() <= buttonX + buttonWidth && e.getX() >= buttonX &&
                     e.getY() <= buttonY + buttonHeight && e.getY() >= buttonY) {
                 // Removes the mouse listener and stops the start menu music
                 removeMouseListener(getButton);
@@ -68,7 +72,7 @@ public class Main extends JFrame {
                 start = false;
             }
             // Checks if the user clicks the map creation button
-            if(e.getX() <= createMapX + buttonWidth && e.getX() >= createMapX &&
+            if (e.getX() <= createMapX + buttonWidth && e.getX() >= createMapX &&
                     e.getY() <= buttonY + buttonHeight && e.getY() >= buttonY) {
                 // Gets rid of the current JFrame and stops the intro music
                 dispose();
@@ -80,7 +84,8 @@ public class Main extends JFrame {
         }
     };
 
-    /** Loops music on the background clip
+    /**
+     * Loops music on the background clip
      *
      * @param gameMusic - The path to the wav file containing the background music
      */
@@ -92,13 +97,14 @@ public class Main extends JFrame {
             backgroundMusic.loop(Clip.LOOP_CONTINUOUSLY);
         }
         // If for some reason the music fails to play, the error is reported and the type of exception is printed
-        catch(IOException | LineUnavailableException | NullPointerException ex) {
+        catch (IOException | LineUnavailableException | NullPointerException ex) {
             System.err.println("Unable to play background music");
             System.err.println(ex);
         }
     }
 
-    /** Loads an audio file into the audio input stream
+    /**
+     * Loads an audio file into the audio input stream
      *
      * @param fileName - The path to the audio file
      * @return An AudioInputStream object connected to the specified file
@@ -109,46 +115,47 @@ public class Main extends JFrame {
             return AudioSystem.getAudioInputStream(new File(fileName));
         }
         // Reports any errors and the exceptions generated and returns null
-        catch(IOException | UnsupportedAudioFileException e) {
+        catch (IOException | UnsupportedAudioFileException e) {
             System.err.println("Unable to open " + fileName);
             System.err.println(e);
             return null;
         }
     }
 
-    /** Creates the HashSet containing all the walls in a map
-     *
+    /**
+     * Creates the HashSet containing all the walls in a map
      */
     private void generateWalls() {
         // Sets the walls HashSet to an empty HashSet
         walls = new HashSet<>();
         // Iterates through every pixel in the map
-        for(int i = 0; i < mapWidth; i++) {
-            for(int j = 0; j < mapHeight; j++) {
+        for (int i = 0; i < mapWidth; i++) {
+            for (int j = 0; j < mapHeight; j++) {
                 // Checks the color of the pixel in the map
                 Color cellColor = new Color(map.getRGB(i, j));
                 // If the pixel is close enough to the wall color it is added to the set
-                if(cellColor.getRed() >= wallColor.getRed()-5 && cellColor.getRed() <= wallColor.getRed()+5 &&
-                        cellColor.getGreen() >= wallColor.getGreen()-5 && cellColor.getGreen() <= wallColor.getGreen()+5 &&
-                        cellColor.getBlue() >= wallColor.getBlue()-5 && cellColor.getBlue() <= wallColor.getBlue()+5) {
+                if (cellColor.getRed() >= wallColor.getRed() - 5 && cellColor.getRed() <= wallColor.getRed() + 5 &&
+                        cellColor.getGreen() >= wallColor.getGreen() - 5 && cellColor.getGreen() <= wallColor.getGreen() + 5 &&
+                        cellColor.getBlue() >= wallColor.getBlue() - 5 && cellColor.getBlue() <= wallColor.getBlue() + 5) {
                     walls.add(new Point(i, j));
                 }
             }
         }
     }
 
-    /** Loads the custom font for the game
+    /**
+     * Loads the custom font for the game
      *
      * @return A font generated from the 'zorque.ttf' text file
      */
     private Font loadFont() {
         try {
-        // Creates the font to use
-        Font gameFont = Font.createFont(Font.TRUETYPE_FONT, new File("zorque.ttf")).deriveFont(75f);
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        // Registers the font
-        ge.registerFont(gameFont);
-        return gameFont;
+            // Creates the font to use
+            Font gameFont = Font.createFont(Font.TRUETYPE_FONT, new File("zorque.ttf")).deriveFont(75f);
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            // Registers the font
+            ge.registerFont(gameFont);
+            return gameFont;
         }
         // Handles failure to produce a font from the file
         catch (IOException | FontFormatException e) {
@@ -156,6 +163,7 @@ public class Main extends JFrame {
             return null;
         }
     }
+
     // JPanel that the game is displayed on
     public class GamePanel extends JPanel {
         // Loads the custom game font
@@ -165,14 +173,15 @@ public class Main extends JFrame {
         // Sets the default size of the tanks
         int tankSize = 30;
 
-        /** Constructor for the game panel, calls all one-time operations necessary before the game can be played
+        /**
+         * Constructor for the game panel, calls all one-time operations necessary before the game can be played
          */
         private GamePanel() {
             // Sets the title of the graphics frame
             setTitle("Tanks");
             // Creates two tanks at opposite corners of the map
             player1 = new Tank(50, 50, tankSize, Color.red);
-            player2 = new Tank(map.getWidth()-60, map.getHeight()-60, tankSize, Color.blue);
+            player2 = new Tank(map.getWidth() - 60, map.getHeight() - 60, tankSize, Color.blue);
             // Creates the set of walls
             generateWalls();
             // Tries to start the intro music
@@ -183,14 +192,14 @@ public class Main extends JFrame {
                 backgroundMusic.loop(Clip.LOOP_CONTINUOUSLY);
             }
             // If unable to play intro music, the error and its exception is reported
-            catch(LineUnavailableException | IOException | NullPointerException e) {
+            catch (LineUnavailableException | IOException | NullPointerException e) {
                 System.err.println("Unable to play intro music");
                 System.err.println(e);
             }
             // Sets the x location for the map creation button in the start screen
-            createMapX = map.getWidth()-buttonX-buttonWidth;
+            createMapX = map.getWidth() - buttonX - buttonWidth;
             // sets the y location for both the start game and map creation buttons
-            buttonY = map.getHeight()-150;
+            buttonY = map.getHeight() - 150;
             // Allows for key listeners
             setFocusable(true);
             requestFocusInWindow();
@@ -315,8 +324,8 @@ public class Main extends JFrame {
             // Downcasts to a Graphics2D object
             Graphics2D g2d = (Graphics2D) g;
             // Checks if the game is still in the start screen
-            if(start) startScreen(g2d);
-            // Runs the game if out of the start screen
+            if (start) startScreen(g2d);
+                // Runs the game if out of the start screen
             else {
                 // Draws the map in the background
                 g2d.drawImage(map, 0, 0, null);
@@ -333,7 +342,7 @@ public class Main extends JFrame {
                 // If one of the players isn't alive, the game ends and the players are prompted to either play again or exit
                 if (!player2.isAlive()) {
                     // If the game has not already been set to over, it is done so here
-                    if(!gameOver) {
+                    if (!gameOver) {
                         // The option pane is given its own thread so that the game thread can keep working
                         new endgamePrompt().start();
                         // The game is set to over and the appropriate winner color and string is assigned
@@ -342,21 +351,19 @@ public class Main extends JFrame {
                         winner = "Player 1";
                     }
 
-                }
-                else {
+                } else {
                     // If player 2 is alive, then their tank is drawn
                     player2.draw(g2d);
                 }
                 if (!player1.isAlive()) {
-                    if(!gameOver) {
+                    if (!gameOver) {
                         new endgamePrompt().start();
                         gameOver = true;
                         winnerColor = Color.blue;
                         winner = "Player 2";
                         add(new JOptionPane());
                     }
-                }
-                else {
+                } else {
                     // If player 1 is alive, then their tank is drawn
                     player1.draw(g2d);
                 }
@@ -367,7 +374,8 @@ public class Main extends JFrame {
         }
 
 
-        /** Displays the start screen and creates the selection buttons
+        /**
+         * Displays the start screen and creates the selection buttons
          *
          * @param g2d - the Graphics2D object to use in drawing
          */
@@ -377,30 +385,31 @@ public class Main extends JFrame {
             // Sets the color and font for the title and then draws it in the center
             g2d.setFont(gameFont);
             g2d.setColor(Color.blue);
-            g2d.drawString("Tanks", getWidth()/2-120, 75);
+            g2d.drawString("Tanks", getWidth() / 2 - 120, 75);
             // Sets the font for the subtitle and draws it under the title
             g2d.setFont(new Font("TimesNewRoman", Font.PLAIN, 25));
-            g2d.drawString("(Inspired by the tank level from Tron)", getWidth()/2-200, 100);
+            g2d.drawString("(Inspired by the tank level from Tron)", getWidth() / 2 - 200, 100);
             // Creates a visible play button
             g2d.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
             // Draws the text for the play button in black text in the custom font
             g2d.setColor(Color.black);
-            g2d.drawRect(buttonX+2, buttonY+2, buttonWidth-4, buttonHeight-4);
+            g2d.drawRect(buttonX + 2, buttonY + 2, buttonWidth - 4, buttonHeight - 4);
             g2d.setFont(gameFont.deriveFont(Font.BOLD, 25f));
-            g2d.drawString("Start", buttonX+60, buttonY+60);
+            g2d.drawString("Start", buttonX + 60, buttonY + 60);
             // Draws a visible map creation button in red
             g2d.setColor(Color.red);
             g2d.fillRect(createMapX, buttonY, buttonWidth, buttonHeight);
             // Draws the text for the map creation button in black text in the custom font
             g2d.setColor(Color.black);
-            g2d.drawRect(createMapX+2, buttonY+2, buttonWidth-4, buttonHeight-4);
+            g2d.drawRect(createMapX + 2, buttonY + 2, buttonWidth - 4, buttonHeight - 4);
             g2d.setFont(gameFont.deriveFont(Font.BOLD, 25f));
-            g2d.drawString("Custom Map", createMapX+10, buttonY+60);
+            g2d.drawString("Custom Map", createMapX + 10, buttonY + 60);
 
         }
     }
 
-    /** Handles all object updating for the game
+    /**
+     * Handles all object updating for the game
      */
     private class objectUpdater extends Thread {
 
@@ -408,44 +417,54 @@ public class Main extends JFrame {
         public void run() {
             // The updates are done approximately 30 times per second to allow for fluid animation
             Timer updateAnimationTimer = new Timer(33, (ActionListener) -> {
-                // The direction of tank and turret movement are stored as integers, assigned from player 1 first, then
-                // player 2
-                int direction = getP1Move();
-                int turn = getP1Turret();
-                // After the tank and turret direction for player 1 is found, the tank is updated accordingly
-                player1.move(direction, walls);
-                player1.turn(turn);
-                direction = getP2Move();
-                turn = getP2Turret();
-                // After the tank and turret direction for player 2 is found, the tank is updated accordingly
-                player2.move(direction, walls);
-                player2.turn(turn);
-                // Since attempting to modify an ArrayList while iterating through it will raise a concurrent modification
-                // exception, the missiles that die in this frame are stored in their own ArrayList and deleted after
-                // iteration
-                ArrayList<Missile> deadMissiles = new ArrayList<>();
-                // Updates every missile and reads which ones are dead
-                for (Missile missile : missiles) {
-                    // If a missile is alive, it keeps moving, otherwise it is added to the dead list for deletion
-                    if (missile.isAlive()) {
-                        // Missiles move three times as fast as tanks, but each movement must be checked for collisions
-                        // indepentently so they are handled separately rather than by changing position all at once
-                        missile.update(walls);
-                        missile.update(walls);
-                        missile.update(walls);
-                    } else {
-                        deadMissiles.add(missile);
+                // The objects are only updated if the game is still going
+                if(!gameOver) {
+                    // The direction of tank and turret movement are stored as integers, assigned from player 1 first, then
+                    // player 2
+                    int direction = getP1Move();
+                    int turn = getP1Turret();
+                    // After the tank and turret direction for player 1 is found, the tank is updated accordingly
+                    player1.move(direction, walls);
+                    player1.turn(turn);
+                    direction = getP2Move();
+                    turn = getP2Turret();
+                    // After the tank and turret direction for player 2 is found, the tank is updated accordingly
+                    player2.move(direction, walls);
+                    player2.turn(turn);
+                    // Since attempting to modify an ArrayList while iterating through it will raise a concurrent modification
+                    // exception, the missiles that die in this frame are stored in their own ArrayList and deleted after
+                    // iteration
+                    ArrayList<Missile> deadMissiles = new ArrayList<>();
+                    // Updates every missile and reads which ones are dead
+                    for (Missile missile : missiles) {
+                        // If a missile is alive, it keeps moving, otherwise it is added to the dead list for deletion
+                        if (missile.isAlive() && !gameOver) {
+                            // Missiles move three times as fast as tanks, but each movement must be checked for collisions
+                            // independently so they are handled separately rather than by changing position all at once
+                            missile.update(walls);
+                            missile.update(walls);
+                            missile.update(walls);
+                        } else {
+                            deadMissiles.add(missile);
+                        }
+                    }
+                    // Removes all dead missiles from the current frame
+                    missiles.removeAll(deadMissiles);
+                    // Tracks how long each frame takes to update to check this thread's ability to handle heavier loads
+                    if (trackPerformance) {
+                        long frameTime = System.nanoTime() - startTime;
+                        startTime = System.nanoTime();
+                        System.out.println("Frame update time: " + frameTime / 1000000 + "ms");
                     }
                 }
-                // Removes all dead missiles from the current frame
-                missiles.removeAll(deadMissiles);
             });
             // Starts the object update timer
             updateAnimationTimer.start();
         }
     }
 
-    /** Displays the post-game prompt on its own thread to allow the game to continue to operate while it waits for input
+    /**
+     * Displays the post-game prompt on its own thread to allow the game to continue to operate while it waits for input
      */
     private class endgamePrompt extends Thread {
 
@@ -462,15 +481,15 @@ public class Main extends JFrame {
                 dispose();
                 backgroundMusic.stop();
                 main(null);
-            }
-            else {
+            } else {
                 System.exit(0);
             }
         }
 
     }
 
-    /** Gets the direction that player 1's turret is going
+    /**
+     * Gets the direction that player 1's turret is going
      *
      * @return 1 for clockwise, 2 for counterclockwise, and 0 for not moving
      */
@@ -484,7 +503,8 @@ public class Main extends JFrame {
         return 0;
     }
 
-    /** Gets the direction that player 2's turret is going
+    /**
+     * Gets the direction that player 2's turret is going
      *
      * @return 1 for clockwise, 2 for counterclockwise, and 0 for not moving
      */
@@ -498,7 +518,8 @@ public class Main extends JFrame {
         return 0;
     }
 
-    /** Gets the direction that player 1's tank is going
+    /**
+     * Gets the direction that player 1's tank is going
      *
      * @return 1 for up, 2 for left, 3 for down, 4 for right and 0 for not moving
      */
@@ -506,7 +527,8 @@ public class Main extends JFrame {
         return getMove(up1, left1, down1, right1);
     }
 
-    /** Gets the direction that player 2's tank is going
+    /**
+     * Gets the direction that player 2's tank is going
      *
      * @return 1 for up, 2 for left, 3 for down, 4 for right and 0 for not moving
      */
@@ -514,7 +536,8 @@ public class Main extends JFrame {
         return getMove(up2, left2, down2, right2);
     }
 
-    /** Gets the direction that a player's tank is going
+    /**
+     * Gets the direction that a player's tank is going
      *
      * @return 1 for up, 2 for left, 3 for down, 4 for right and 0 for not moving
      */
@@ -535,8 +558,8 @@ public class Main extends JFrame {
     }
 
 
-
-    /** Constructor for the game frame
+    /**
+     * Constructor for the game frame
      */
     private Main() {
         // The difference between frame size and panel size
@@ -554,14 +577,14 @@ public class Main extends JFrame {
             // Sets the program to exit when the graphics window is closed
             setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             // Sets the size according to the map size and frame offsets
-            setSize(mapWidth+xFrameOffset, mapHeight+yFrameOffset);
+            setSize(mapWidth + xFrameOffset, mapHeight + yFrameOffset);
             // Prevents the user from resizing the game
             setResizable(false);
             // Adds the drawing panel for the game
             add(new GamePanel());
         }
         // If no user created background file exists, the default background is used
-        catch(IOException ex) {
+        catch (IOException ex) {
             try {
                 // Loads the default map of the game
                 map = ImageIO.read(new File("defaultBackground.jpg"));
@@ -571,14 +594,14 @@ public class Main extends JFrame {
                 // Sets the program to exit when the graphics window is closed
                 setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                 // Sets the size according to the map size and frame offsets
-                setSize(mapWidth+xFrameOffset, mapHeight+yFrameOffset);
+                setSize(mapWidth + xFrameOffset, mapHeight + yFrameOffset);
                 // Prevents the user from resizing the game
                 setResizable(false);
                 // Adds the drawing panel for the game
                 add(new GamePanel());
             }
             // If no map can be read, then the program prints an error and exits
-            catch(IOException e) {
+            catch (IOException e) {
                 System.err.println("No map file found");
             }
         }

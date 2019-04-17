@@ -70,7 +70,7 @@ class Missile {
                     walls.contains(new Point((int) xPos+i, (int) yPos+radius*2))) {
                 hitWallY = true;
             }
-            if(walls.contains(new Point((int) xPos, (int) yPos+i)) ||
+            if(walls.contains(new Point((int) xPos,(int) yPos+i)) ||
                     walls.contains(new Point((int) xPos+radius*2, (int) yPos+i))) {
                 hitWallX = true;
             }

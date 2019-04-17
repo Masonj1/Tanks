@@ -14,6 +14,7 @@ import java.lang.Math;
 
 class createMap extends JFrame {
 
+    // Stores the colors for walls and teleporter tiles
     private Color wallColor = new Color(100, 235, 96);
     private Color teleporterColor = new Color(218, 82, 190);
     // Creates variables for the dimensions of the black/white grid
